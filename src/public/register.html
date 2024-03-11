@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>She Railed my Honkai until i see Stars</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        height: 400px;
+        width: 800px;
+    }
+
+</style>
+</head>
+<body>
+<label for="">Login</label>
+<input type="text" id="login" placeholder="Login"> <br>
+<label for="">Username</label>
+<input type="text" id="username">
+<p>Hasło (zaznacz na mapie):</p>
+<div id="map"></div>
+<button id="submitBtn">Submit</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+<script>
+    let map = L.map('map').setView([0, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    let marker;
+
+    function onMapClick(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+    }
+
+    map.on('click', onMapClick);
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        if (marker) {
+            let lat = marker.getLatLng().lat;
+            let lng = marker.getLatLng().lng;
+            let login = document.getElementById("login").value
+            let username = document.getElementById("username").value
+            
+            let params = {
+                lat, lng, login, username
+            }
+
+            fetch("/auth/register", {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Wystąpił błąd sieciowy")
+                }
+
+                console.log(response)
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data); // przetworzone dane
+            })
+            .catch((error) => {
+                console.error('Wystąpił błąd:', error);
+            });
+        } else {
+            // nie ma zaznaczonego punktu
+        }
+    });
+
+    
+
+</script>
+</body>
+</html>
